@@ -5,7 +5,12 @@ public class SafeArea : MonoBehaviour
 {
     Rect applied;
 
-    void Update()
+    // сразу при включении: экраны считают позиции элементов в тот же кадр
+    void OnEnable() => Apply();
+
+    void Update() => Apply();
+
+    void Apply()
     {
         var area = Screen.safeArea;
         if (area == applied) return;

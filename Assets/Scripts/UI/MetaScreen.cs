@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,7 +17,11 @@ public class MetaScreen : MonoBehaviour
     [SerializeField] Sprite medalLocked;
     [SerializeField] TMP_Text goalText, playText;
 
+    const float DesignHeight = 1920f;
+
     Transform nextMedal;
+    RectTransform[] bottomBlock;
+    float[] restY;
 
     void Update()
     {
@@ -45,8 +51,29 @@ public class MetaScreen : MonoBehaviour
             StartCoroutine(Tween.PopIn(cards[i].transform, 0.06f * i));
 
         Canvas.ForceUpdateCanvases();
+        LiftBottomBlock();
         Vector3 point = cam.ScreenToWorldPoint(cannonSlot.position);
         cannon.Showcase(new Vector3(point.x, point.y - 1.15f, 0f));
+    }
+
+    // на высоких экранах карточки, рекорды и кнопка поднимаются, чтобы под пушкой не было дыры
+    void LiftBottomBlock()
+    {
+        var safe = (RectTransform)balanceChip.parent;
+        float lift = Mathf.Max(0f, safe.rect.height - DesignHeight) * 0.75f;
+
+        if (bottomBlock == null)
+        {
+            var list = new List<RectTransform>();
+            foreach (var card in cards) list.Add((RectTransform)card.transform);
+            list.Add((RectTransform)medals[0].transform.parent);
+            list.Add((RectTransform)playText.transform.parent);
+            bottomBlock = list.ToArray();
+            restY = Array.ConvertAll(bottomBlock, r => r.anchoredPosition.y);
+        }
+
+        for (int i = 0; i < bottomBlock.Length; i++)
+            bottomBlock[i].anchoredPosition = new Vector2(bottomBlock[i].anchoredPosition.x, restY[i] + lift);
     }
 
     void Buy(UpgradeCard card)
